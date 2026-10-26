@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Fees Monitor & Calculator</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --warning: #ca8a04;
+            --danger: #dc2626;
+            --background: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            padding: 15px;
+            font-size: 16px;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            background: var(--primary);
+            color: white;
+            margin: -15px -15px 20px -15px;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            -webkit-appearance: none;
+        }
+
+        input:focus {
+            outline: 2px solid var(--primary);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:active {
+            background: #1d4ed8;
+        }
+
+        .summary-box {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .metric {
+            padding: 10px;
+            border-radius: 8px;
+            background: #f1f5f9;
+            text-align: center;
+        }
+
+        .metric span {
+            display: block;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .metric strong {
+            font-size: 1.1rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .status-clear { background-color: var(--success); }
+        .status-pending { background-color: var(--warning); }
+        .status-overdue { background-color: var(--danger); }
+
+        .history-list {
+            list-style: none;
+            margin-top: 10px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.9rem;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Smart Fees Monitor</h1>
+        <p>Track balances and calculate school dues easily</p>
+    </header>
+
+    <div class="container">
+        
+        <!-- CALCULATOR CARD -->
+        <div class="card">
+            <h2>Quick Calculator</h2>
+            <div class="form-group">
+                <label for="totalFees">Total Required Fees (UGX)</label>
+                <input type="number" id="totalFees" placeholder="e.g. 800000" value="800000">
+            </div>
+            <div class="form-group">
+                <label for="amountPaid">Amount Paid So Far (UGX)</label>
+                <input type="number" id="amountPaid" placeholder="e.g. 500000" value="0">
+            </div>
+            <button onclick="calculateFees()">Calculate Balance</button>
+        </div>
+
+        <!-- MONITOR & STATUS CARD -->
+        <div class="card">
+            <h2>Payment Status Overview</h2>
+            <div class="summary-box">
+                <div class="metric">
+                    <span>Total Dues</span>
+                    <strong id="dispTotal">UGX 800,000</strong>
+                </div>
+                <div class="metric">
+                    <span>Paid</span>
+                    <strong id="dispPaid" style="color: var(--success);">UGX 0</strong>
+                </div>
+            </div>
+            <div class="summary-box">
+                <div class="metric" style="grid-column: span 2;">
+                    <span>Outstanding Balance</span>
+                    <strong id="dispBalance" style="color: var(--danger); font-size: 1.4rem;">UGX 800,000</strong>
+                </div>
+            </div>
+            <div id="statusBadge" class="status-badge status-overdue">No Payment Made</div>
+        </div>
+
+        <!-- DEMO TRACKER CARD -->
+        <div class="card">
+            <h2>Recent Payments Log</h2>
+            <ul class="history-list" id="historyLog">
+                <li class="history-item">
+                    <span>Initial Deposit (Cash)</span>
+                    <span style="color: var(--success); font-weight:bold;">+ UGX 0</span>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script>
+        function formatMoney(amount) {
+            return "UGX " + Number(amount).toLocaleString();
+        }
+
+        function calculateFees() {
+            // Get values from mobile inputs
+            const total = parseFloat(document.getElementById('totalFees').value) || 0;
+            const paid = parseFloat(document.getElementById('amountPaid').value) || 0;
+            const balance = total - paid;
+
+            // Update UI elements dynamically
+            document.getElementById('dispTotal').innerText = formatMoney(total);
+            document.getElementById('dispPaid').innerText = formatMoney(paid);
+            document.getElementById('dispBalance').innerText = formatMoney(balance);
+
+            const badge = document.getElementById('statusBadge');
+            const historyLog = document.getElementById('historyLog');
+
+            // Logic to calculate status tier
+            if (paid === 0) {
+                badge.innerText = "No Payment Made";
+                badge.className = "status-badge status-overdue";
+            } else if (balance <= 0) {
+                badge.innerText = "Fully Cleared 🎉";
+                badge.className = "status-badge status-clear";
+            } else if (paid >= (total * 0.5)) {
+                badge.innerText = "Half Paid - Good Standing";
+                badge.className = "status-badge status-pending";
+            } else {
+                badge.innerText = "Below 50% - Attention Required";
+                badge.className = "status-badge status-overdue";
+            }
+
+            // Dynamically show the logged payment interaction
+            historyLog.innerHTML = `
+                <li class="history-item">
+                    <span>Calculated Input Allocation</span>
+                    <span style="color: var(--success); font-weight:bold;">+ ${formatMoney(paid)}</span>
+                </li>
+                <li class="history-item" style="opacity: 0.7;">
+                    <span>Remaining Debt Burden</span>
+                    <span style="color: var(--danger); font-weight:bold;">${formatMoney(balance)}</span>
+                </li>
+            `;
+        }
+    </script>
+</body>
+</html>
